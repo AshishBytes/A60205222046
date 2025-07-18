@@ -8,19 +8,26 @@ const Shortener = () => {
   const [validity, setValidity] = useState('');
   const [shortLink, setShortLink] = useState(null);
 
-  const handleSubmit = async () => {
-    if (!url) return alert("Please enter a URL");
-    try {
-      const res = await api.post('/shorten', {
-        url,
-        shortcode,
-        validity: validity ? parseInt(validity) : undefined
-      });
-      setShortLink(res.data.shortLink);
-    } catch (err) {
-      alert("Shortcode already exists or something went wrong.");
+const handleSubmit = async () => {
+  if (!url.trim()) return alert("Please enter a long URL.");
+  if (!/^https?:\/\/.+\..+/.test(url)) return alert("Please enter a valid URL (starting with http:// or https://).");
+  if (validity && isNaN(validity)) return alert("Validity must be a number.");
+
+  try {
+    const res = await api.post('/shorten', {
+      url,
+      shortcode,
+      validity: validity ? parseInt(validity) : undefined
+    });
+    setShortLink(res.data.shortLink);
+  } catch (err) {
+    if (err.response && err.response.data?.error) {
+      alert(err.response.data.error);
+    } else {
+      alert("Something went wrong. Please try again.");
     }
-  };
+  }
+};
 
   return (
     <Paper elevation={5} sx={{ maxWidth: 600, mx: 'auto', mt: 5, p: 4, borderRadius: 3 }}>

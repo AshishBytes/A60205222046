@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  TextField, Button, Box, Typography, List, ListItem, Divider, Paper
-} from '@mui/material';
-import api from '../api/api';
+  TextField,
+  Button,
+  Box,
+  Typography,
+  List,
+  ListItem,
+  Divider,
+  Paper,
+} from "@mui/material";
+import api from "../api/api";
 
 const Stats = () => {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [stats, setStats] = useState(null);
   const [allLinks, setAllLinks] = useState([]);
 
@@ -22,7 +29,7 @@ const Stats = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const res = await api.get('/allurls');
+        const res = await api.get("/allurls");
         setAllLinks(res.data);
       } catch (err) {
         console.error("Could not fetch all URLs");
@@ -32,8 +39,13 @@ const Stats = () => {
   }, []);
 
   return (
-    <Paper elevation={5} sx={{ maxWidth: 700, mx: 'auto', mt: 5, p: 4, borderRadius: 3 }}>
-      <Typography variant="h5" gutterBottom>📊 Short URL Statistics</Typography>
+    <Paper
+      elevation={5}
+      sx={{ maxWidth: 700, mx: "auto", mt: 5, p: 4, borderRadius: 3 }}
+    >
+      <Typography variant="h5" gutterBottom>
+        📊 Short URL Statistics
+      </Typography>
 
       <TextField
         fullWidth
@@ -44,22 +56,36 @@ const Stats = () => {
         onChange={(e) => setCode(e.target.value)}
       />
 
-      <Button variant="contained" sx={{ mb: 3, fontWeight: 'bold' }} onClick={fetchStats}>
+      <Button
+        variant="contained"
+        sx={{ mb: 3, fontWeight: "bold" }}
+        onClick={fetchStats}
+      >
         Fetch Stats
       </Button>
 
       {stats && (
         <Box sx={{ mb: 4 }}>
-          <Typography><strong>Original URL:</strong> {stats.original}</Typography>
-          <Typography><strong>Expires:</strong> {new Date(stats.expiry).toLocaleString()}</Typography>
-          <Typography><strong>Total Clicks:</strong> {stats.totalClicks}</Typography>
+          <Typography>
+            <strong>Original URL:</strong> {stats.original}
+          </Typography>
+          <Typography>
+            <strong>Expires:</strong> {new Date(stats.expiry).toLocaleString()}
+          </Typography>
+          <Typography>
+            <strong>Total Clicks:</strong> {stats.totalClicks}
+          </Typography>
+          <Typography color={stats.expired ? "error" : "green"}>
+            {stats.expired ? "⛔ This link has expired" : "✅ Active"}
+          </Typography>
 
           <List>
             {stats.clicks.map((click, index) => (
               <div key={index}>
                 <ListItem>
                   <Typography>
-                    <strong>{index + 1}.</strong> {click.timestamp} | Source: {click.source} | Location: {click.location}
+                    <strong>{index + 1}.</strong> {click.timestamp} | Source:{" "}
+                    {click.source} | Location: {click.location}
                   </Typography>
                 </ListItem>
                 <Divider />
@@ -70,22 +96,44 @@ const Stats = () => {
       )}
 
       <Divider sx={{ my: 3 }} />
-      <Typography variant="h6" gutterBottom>📂 All Shortened URLs</Typography>
+      <Typography variant="h6" gutterBottom>
+        📂 All Shortened URLs
+      </Typography>
 
       <List>
-        {allLinks.map((item, index) => (
-          <div key={index}>
-            <ListItem>
-              <Typography variant="body2" component="div">
-                🔗 <strong>{item.code}</strong> → <a href={item.url} target="_blank" rel="noreferrer">{item.url}</a><br />
-                📅 Created: {item.created ? new Date(item.created).toLocaleString() : 'N/A'}<br />
-                ⏰ Expires: {new Date(item.expiry).toLocaleString()}<br />
-                👁️ Clicks: {item.clicks.length}
-              </Typography>
-            </ListItem>
-            <Divider />
-          </div>
-        ))}
+        {allLinks.map((item, index) => {
+          const isExpired = new Date(item.expiry) < new Date();
+
+          return (
+            <div key={index}>
+              <ListItem>
+                <Typography variant="body2" component="div">
+                  🔗 <strong>{item.code}</strong> →{" "}
+                  <a href={item.url} target="_blank" rel="noreferrer">
+                    {item.url}
+                  </a>
+                  <br />
+                  📅 Created:{" "}
+                  {item.created
+                    ? new Date(item.created).toLocaleString()
+                    : "N/A"}
+                  <br />⏰ Expires: {new Date(item.expiry).toLocaleString()}
+                  <br />
+                  👁️ Clicks: {item.clicks.length}
+                  <br />
+                  {isExpired ? (
+                    <span style={{ color: "red" }}>
+                      ⛔ This link has expired
+                    </span>
+                  ) : (
+                    <span style={{ color: "green" }}>✅ Active</span>
+                  )}
+                </Typography>
+              </ListItem>
+              <Divider />
+            </div>
+          );
+        })}
       </List>
     </Paper>
   );
