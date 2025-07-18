@@ -85,7 +85,8 @@ const Stats = () => {
                 <ListItem>
                   <Typography>
                     <strong>{index + 1}.</strong> {click.timestamp} | Source:{" "}
-                    {click.source} | Location: {click.location}
+                    {click.source} | Location: {click.location || '🌐 Unknown'}
+
                   </Typography>
                 </ListItem>
                 <Divider />

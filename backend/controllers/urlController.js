@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
+const axios = require("axios");
 
 exports.createShortURL = (req, res) => {
   const { url, validity = 30, shortcode } = req.body;
@@ -39,22 +40,34 @@ exports.createShortURL = (req, res) => {
   });
 };
 
-exports.redirectURL = (req, res) => {
+exports.redirectURL = async (req, res) => {
   const code = req.params.code;
-  const record = urlDB.find(u => u.code === code);
-  if (!record) return res.status(404).send('Short URL not found.');
+  const record = urlDB.find((u) => u.code === code);
+  if (!record) return res.status(404).send("Short URL not found.");
 
   const now = new Date();
   const expiryTime = new Date(record.expiry);
 
   if (now > expiryTime) {
-    return res.status(410).send('This short link has expired.');
+    return res.status(410).send("This short link has expired.");
+  }
+
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  let location = "Unknown";
+
+  if (!ip.startsWith("::1") && ip !== "127.0.0.1") {
+    try {
+      const response = await axios.get(`https://ipapi.co/${ip}/country_name/`);
+      location = response.data || "Unknown";
+    } catch (err) {
+      console.warn("Geo IP lookup failed:", err.message);
+    }
   }
 
   record.clicks.push({
-    timestamp: now.toISOString(),
-    source: req.headers.referer || 'direct',
-    location: 'N/A'
+    timestamp: new Date().toISOString(),
+    source: req.headers.referer || "direct",
+    location,
   });
 
   res.redirect(record.url);
@@ -62,8 +75,8 @@ exports.redirectURL = (req, res) => {
 
 exports.getStats = (req, res) => {
   const code = req.params.code;
-  const record = urlDB.find(u => u.code === code);
-  if (!record) return res.status(404).json({ error: 'Short URL not found.' });
+  const record = urlDB.find((u) => u.code === code);
+  if (!record) return res.status(404).json({ error: "Short URL not found." });
 
   const now = new Date();
   const expiry = new Date(record.expiry);
@@ -74,7 +87,7 @@ exports.getStats = (req, res) => {
     expiry: record.expiry,
     expired: isExpired,
     totalClicks: record.clicks.length,
-    clicks: record.clicks
+    clicks: record.clicks,
   });
 };
 
