@@ -65,19 +65,38 @@ const Stats = () => {
       </Button>
 
       {stats && (
-        <Box sx={{ mb: 4 }}>
-          <Typography>
-            <strong>Original URL:</strong> {stats.original}
-          </Typography>
-          <Typography>
-            <strong>Expires:</strong> {new Date(stats.expiry).toLocaleString()}
-          </Typography>
-          <Typography>
-            <strong>Total Clicks:</strong> {stats.totalClicks}
-          </Typography>
-          <Typography color={stats.expired ? "error" : "green"}>
-            {stats.expired ? "⛔ This link has expired" : "✅ Active"}
-          </Typography>
+  <Box sx={{ mb: 4 }}>
+    <Typography>
+      <strong>Original URL:</strong>{' '}
+      <a href={stats.original} target="_blank" rel="noreferrer">
+        {stats.original}
+      </a>
+    </Typography>
+
+    <Typography>
+      <strong>Short URL:</strong>{' '}
+      <a
+        href={`http://localhost:5000/${code}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        http://localhost:5000/{code}
+      </a>
+    </Typography>
+
+    <Typography>
+      <strong>Expires:</strong>{' '}
+      {new Date(stats.expiry).toLocaleString()}
+    </Typography>
+
+    <Typography>
+      <strong>Total Clicks:</strong> {stats.totalClicks}
+    </Typography>
+
+    <Typography color={stats.expired ? 'error' : 'green'}>
+      {stats.expired ? '⛔ This link has expired' : '✅ Active'}
+    </Typography>
+
 
           <List>
             {stats.clicks.map((click, index) => (
